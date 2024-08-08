@@ -58,11 +58,12 @@ form button {
   border-radius: 4px;
   background-color: #181c2e;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .login a {
-  margin: 1.5rem 0;
+  margin: 0.5rem 0;
   color: #000;
   cursor: pointer;
+  font-size: 14px;
 }
