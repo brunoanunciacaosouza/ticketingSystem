@@ -1,6 +1,9 @@
 import { useState, createContext, useEffect } from "react";
 import { auth, db } from "../services/firebaseConnection";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,8 +15,34 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const signIn = (email, password) => {
-    console.log(email, password);
+  const signIn = async (email, password) => {
+    setLoading(true);
+
+    await signInWithEmailAndPassword(auth, email, password)
+      .then(async (value) => {
+        let uid = value.user.uid;
+
+        const docRef = doc(db, "users", uid);
+        const docSnap = await getDoc(docRef);
+
+        let data = {
+          uid: uid,
+          nome: docSnap.data.nome,
+          email: value.user.email,
+          avatarUrl: docSnap.data.avatarUrl,
+        };
+
+        setUser(data);
+        storageUser(data);
+        setLoading(false);
+        toast.success("Bem vindo(a) de volta!");
+        navigate("/dashboard");
+      })
+      .catch((error) => {
+        console.log(error);
+        toast.error("Ops algo deu errado!");
+        setLoading(false);
+      });
   };
 
   const signUp = async (name, email, password) => {

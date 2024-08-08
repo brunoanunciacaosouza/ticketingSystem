@@ -7,15 +7,15 @@ import "./signin.css";
 import { AuthContext } from "../../contexts/auth";
 
 export default function SignIn() {
-  const { signIn } = useContext(AuthContext);
+  const { signIn, loading } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (email !== "" && password !== "") {
-      signIn(email, password);
+      await signIn(email, password);
     }
   };
 
@@ -42,7 +42,9 @@ export default function SignIn() {
             onChange={(event) => setPassword(event.target.value)}
           />
 
-          <button type="submit">Acessar</button>
+          <button type="submit">
+            {loading ? "Carregando" : "Acessar"}
+          </button>
         </form>
 
         <Link to="/register">Criar uma conta</Link>
