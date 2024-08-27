@@ -46,7 +46,7 @@ function AuthProvider({ children }) {
 
         let data = {
           uid: uid,
-          nome: docSnap.data.nome,
+          nome: docSnap.data().nome,
           email: value.user.email,
           avatarUrl: docSnap.data().avatarUrl
         };
@@ -116,6 +116,8 @@ function AuthProvider({ children }) {
         signIn,
         signUp,
         logout,
+        storageUser,
+        setUser,
         loading,
         loadingPrivate,
       }}
