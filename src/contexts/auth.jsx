@@ -3,6 +3,7 @@ import { auth, db } from "../services/firebaseConnection";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,24 @@ function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPrivate, setLoadingPrivate] = useState(true);
+
+  useEffect(() => {
+    async function loadUser(){
+      const storageUser = localStorage.getItem('tickets')
+
+      if(storageUser){
+        setUser(JSON.parse(storageUser))
+        setLoadingPrivate(false);
+      }
+
+
+      setLoadingPrivate(false);
+
+    }
+
+    loadUser();
+  }, [])
 
   const signIn = async (email, password) => {
     setLoading(true);
@@ -31,6 +50,8 @@ function AuthProvider({ children }) {
           email: value.user.email,
           avatarUrl: docSnap.data.avatarUrl,
         };
+
+        console.log(data)
 
         setUser(data);
         storageUser(data);
@@ -80,9 +101,24 @@ function AuthProvider({ children }) {
     localStorage.setItem("tickets", JSON.stringify(data));
   };
 
+ 
+  async function logout(){
+    await signOut(auth);
+    localStorage.removeItem('tickets');
+    setUser(null);
+  }
+
   return (
     <AuthContext.Provider
-      value={{ signed: !!false, user, signIn, signUp, loading }}
+      value={{
+        signed: !!user,
+        user,
+        signIn,
+        signUp,
+        logout,
+        loading,
+        loadingPrivate,
+      }}
     >
       {children}
     </AuthContext.Provider>
