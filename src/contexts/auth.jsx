@@ -48,7 +48,7 @@ function AuthProvider({ children }) {
           uid: uid,
           nome: docSnap.data.nome,
           email: value.user.email,
-          avatarUrl: docSnap.data.avatarUrl,
+          avatarUrl: docSnap.data().avatarUrl
         };
 
         console.log(data)
