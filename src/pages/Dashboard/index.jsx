@@ -4,7 +4,7 @@ import { AuthContext } from "../../contexts/auth";
 import Header from "../../components/Header";
 
 import "./dashboard.css";
-import { FiEdit, FiMessageSquare, FiPlus, FiSearch } from "react-icons/fi";
+import { FiEdit2, FiMessageSquare, FiPlus, FiSearch } from "react-icons/fi";
 import { Title } from "../../components/Title";
 import { Link } from "react-router-dom";
 
@@ -26,11 +26,9 @@ export default function Dashboard() {
 
         <>
           <Link to="/new" className="new">
-            <FiPlus color="#fff" size={25} />
+            <FiPlus color="#FFF" size={25} />
             Novo chamado
           </Link>
-
-          <div className="container dashboard"></div>
 
           <table>
             <thead>
@@ -38,7 +36,7 @@ export default function Dashboard() {
                 <th scope="col">Cliente</th>
                 <th scope="col">Assunto</th>
                 <th scope="col">Status</th>
-                <th scope="col">Cadastrado em</th>
+                <th scope="col">Cadastrando em</th>
                 <th scope="col">#</th>
               </tr>
             </thead>
@@ -48,7 +46,7 @@ export default function Dashboard() {
                 <td data-label="Assunto">Suporte</td>
                 <td data-label="Status">
                   <span className="badge" style={{ backgroundColor: "#999" }}>
-                    Em Aberto
+                    Em aberto
                   </span>
                 </td>
                 <td data-label="Cadastrado">12/05/2022</td>
@@ -57,23 +55,23 @@ export default function Dashboard() {
                     className="action"
                     style={{ backgroundColor: "#3583f6" }}
                   >
-                    <FiSearch color="#fff" size={25} />
+                    <FiSearch color="#FFF" size={17} />
                   </button>
                   <button
                     className="action"
                     style={{ backgroundColor: "#f6a935" }}
                   >
-                    <FiEdit color="#fff" size={25} />
+                    <FiEdit2 color="#FFF" size={17} />
                   </button>
                 </td>
               </tr>
 
               <tr>
-                <td data-label="Cliente">Mercado Esquina</td>
+                <td data-label="Cliente">Informatica TECH</td>
                 <td data-label="Assunto">Suporte</td>
                 <td data-label="Status">
                   <span className="badge" style={{ backgroundColor: "#999" }}>
-                    Em Aberto
+                    Em aberto
                   </span>
                 </td>
                 <td data-label="Cadastrado">12/05/2022</td>
@@ -82,13 +80,13 @@ export default function Dashboard() {
                     className="action"
                     style={{ backgroundColor: "#3583f6" }}
                   >
-                    <FiSearch color="#fff" size={25} />
+                    <FiSearch color="#FFF" size={17} />
                   </button>
                   <button
                     className="action"
                     style={{ backgroundColor: "#f6a935" }}
                   >
-                    <FiEdit color="#fff" size={25} />
+                    <FiEdit2 color="#FFF" size={17} />
                   </button>
                 </td>
               </tr>
@@ -96,8 +94,6 @@ export default function Dashboard() {
           </table>
         </>
       </div>
-
-      <button onClick={handleLogout}>Sair da conta</button>
     </div>
   );
 }
