@@ -7,7 +7,14 @@ import "./dashboard.css";
 import { FiEdit2, FiMessageSquare, FiPlus, FiSearch } from "react-icons/fi";
 import { Title } from "../../components/Title";
 import { Link } from "react-router-dom";
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+} from "firebase/firestore";
 import { db } from "../../services/firebaseConnection";
 import { format } from "date-fns";
 
@@ -19,6 +26,8 @@ export default function Dashboard() {
   const [chamados, setChamados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEmpty, setIsEmpty] = useState(false);
+  const [lastDocs, setLastDocs] = useState();
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     async function loadChamados() {
@@ -54,10 +63,27 @@ export default function Dashboard() {
         });
       });
 
+      const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
       setChamados((chamados) => [...chamados, ...lista]);
+      setLastDocs(lastDoc);
     } else {
       setIsEmpty(true);
     }
+
+    setLoadingMore(false);
+  };
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+
+    const q = query(
+      listRef,
+      orderBy("created", "desc"),
+      startAfter(lastDocs),
+      limit(5)
+    );
+    const querySnapshot = await getDocs(q);
+    await updateState(querySnapshot);
   };
 
   if (loading) {
@@ -122,7 +148,10 @@ export default function Dashboard() {
                         <td data-label="Status">
                           <span
                             className="badge"
-                            style={{ backgroundColor: "#999" }}
+                            style={{
+                              backgroundColor:
+                                item.status === "Aberto" ? "#5cb85c" : "#999",
+                            }}
                           >
                             {item.status}
                           </span>
@@ -135,18 +164,26 @@ export default function Dashboard() {
                           >
                             <FiSearch color="#FFF" size={17} />
                           </button>
-                          <button
+                          <Link
+                            to={`/new/${item.id}`}
                             className="action"
                             style={{ backgroundColor: "#f6a935" }}
                           >
                             <FiEdit2 color="#FFF" size={17} />
-                          </button>
+                          </Link>
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+
+              {loadingMore && <h3>Buscando mais chamados...</h3>}
+              {!loadingMore && !isEmpty && (
+                <button className="btn-more" onClick={handleLoadMore}>
+                  Buscar mais
+                </button>
+              )}
             </>
           )}
         </>
