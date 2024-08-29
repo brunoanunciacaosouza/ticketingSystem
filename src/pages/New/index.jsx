@@ -5,20 +5,33 @@ import { Title } from "../../components/Title";
 import "./new.css";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../contexts/auth";
-import { getDocs, collection, getDoc, doc, addDoc } from "firebase/firestore";
+import {
+  getDocs,
+  collection,
+  getDoc,
+  addDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../services/firebaseConnection";
 import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
 
 const listRef = collection(db, "customers");
 
 export default function New() {
   const { user } = useContext(AuthContext);
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [customers, setCustomers] = useState([]);
   const [customerSelected, setCustomerSelected] = useState(0);
   const [loadCustomer, setLoadCustomer] = useState(true);
-  const [complemento, setComplemento] = useState("");
-  const [assunto, setAssunto] = useState("");
-  const [status, setStatus] = useState("");
+
+  const [complemento, setComplemento] = useState('')
+  const [assunto, setAssunto] = useState('Suporte')
+  const [status, setStatus] = useState('Aberto')
+  const [idCustomer, setIdCustomer] = useState(false);
 
   useEffect(() => {
     async function loadCustomers() {
@@ -41,6 +54,10 @@ export default function New() {
 
           setCustomers(lista);
           setLoadCustomer(false);
+
+          if (id) {
+            loadId(lista);
+          }
         })
         .catch((error) => {
           console.log("error: ", error);
@@ -52,12 +69,33 @@ export default function New() {
     loadCustomers();
   }, []);
 
+  const loadId = async (lista) => {
+    const docRef = doc(db, "chamados", id);
+    await getDoc(docRef)
+      .then((snapshot) => {
+        setAssunto(snapshot.data().assunto);
+        setStatus(snapshot.data().status);
+        setComplemento(snapshot.data().complemento);
+
+        let index = lista.findIndex(
+          (item) => item.id === snapshot.data().clienteId
+        );
+        setCustomerSelected(index);
+        setIdCustomer(true);
+      })
+      .catch((error) => {
+        console.log(error);
+        setIdCustomer(false);
+      });
+  };
+
   const handleOptionChange = (event) => {
     setStatus(event.target.value);
   };
 
   const handleChangeSelect = (event) => {
     setAssunto(event.target.value);
+    console.log(event.target.value);
   };
 
   const handleChangeCustomer = (event) => {
@@ -67,6 +105,31 @@ export default function New() {
   const handleRegister = async (event) => {
     event.preventDefault();
 
+    if (idCustomer) {
+      const docRef = doc(db, "chamados", id);
+
+      await updateDoc(docRef, {
+        cliente: customers[customerSelected].nomeFantasia,
+        clienteId: customers[customerSelected].id,
+        assunto: assunto,
+        status: status,
+        complemento: complemento,
+        userId: user.uid,
+      })
+        .then(() => {
+          toast.info("Chamado atualizado com sucesso!");
+          setCustomerSelected(0);
+          setComplemento("");
+
+          navigate("/dashboard");
+        })
+        .catch((error) => {
+          toast.error("Ops erro ao atualizado o chamado");
+        });
+
+      return;
+    }
+
     await addDoc(collection(db, "chamados"), {
       created: new Date(),
       cliente: customers[customerSelected].nomeFantasia,
@@ -74,6 +137,7 @@ export default function New() {
       assunto: assunto,
       status: status,
       userId: user.uid,
+      complemento: complemento,
     })
       .then(() => {
         toast.success("Chamado Registrado!");
@@ -90,7 +154,7 @@ export default function New() {
       <Header />
 
       <div className="content">
-        <Title name="Novo chamado">
+        <Title name={id ? "Editando chamado": "Novo chamado"}>
           <FiPlusCircle size={25} />
         </Title>
 
@@ -114,7 +178,8 @@ export default function New() {
             <label>Assunto</label>
             <select value={assunto} onChange={handleChangeSelect}>
               <option value="Suporte">Suporte</option>
-              <option value="Visita Técnica">Loja</option>
+              <option value="Visita Tecnica">Visita Tecnica</option>
+              <option value="Financeiro">Financeiro</option>
             </select>
 
             <label>Status</label>
