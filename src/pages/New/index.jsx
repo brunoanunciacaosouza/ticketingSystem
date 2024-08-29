@@ -5,22 +5,48 @@ import { Title } from "../../components/Title";
 import "./new.css";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../contexts/auth";
-import { getDocs, collection, getDoc, doc } from "firebase/firestore";
+import { getDocs, collection, getDoc, doc, addDoc } from "firebase/firestore";
 import { db } from "../../services/firebaseConnection";
+import { toast } from "react-toastify";
 
 const listRef = collection(db, "customers");
 
 export default function New() {
   const { user } = useContext(AuthContext);
   const [customers, setCustomers] = useState([]);
+  const [customerSelected, setCustomerSelected] = useState(0);
   const [loadCustomer, setLoadCustomer] = useState(true);
   const [complemento, setComplemento] = useState("");
   const [assunto, setAssunto] = useState("");
   const [status, setStatus] = useState("");
 
   useEffect(() => {
-    async function loadCustomers(){
-        const querySnapshot = await getDocs(listRef);
+    async function loadCustomers() {
+      const querySnapshot = await getDocs(listRef)
+        .then((snapshot) => {
+          let lista = [];
+
+          snapshot.forEach((doc) => {
+            lista.push({
+              id: doc.id,
+              nomeFantasia: doc.data().nomeFantasia,
+            });
+          });
+
+          if (snapshot.docs.size === 0) {
+            setCustomers([{ id: "1", nomeFantasia: "FREE" }]);
+            setLoadCustomer(false);
+            return;
+          }
+
+          setCustomers(lista);
+          setLoadCustomer(false);
+        })
+        .catch((error) => {
+          console.log("error: ", error);
+          setLoadCustomer(false);
+          setCustomers([{ id: "1", nomeFantasia: "FREE" }]);
+        });
     }
 
     loadCustomers();
@@ -34,6 +60,31 @@ export default function New() {
     setAssunto(event.target.value);
   };
 
+  const handleChangeCustomer = (event) => {
+    setCustomerSelected(event.target.value);
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+
+    await addDoc(collection(db, "chamados"), {
+      created: new Date(),
+      cliente: customers[customerSelected].nomeFantasia,
+      clienteId: customers[customerSelected].id,
+      assunto: assunto,
+      status: status,
+      userId: user.uid,
+    })
+      .then(() => {
+        toast.success("Chamado Registrado!");
+        setComplemento("");
+        setCustomerSelected(0);
+      })
+      .catch((error) => {
+        toast.error("Ops erro ao registrar, tente mais tarde!");
+      });
+  };
+
   return (
     <div>
       <Header />
@@ -44,12 +95,21 @@ export default function New() {
         </Title>
 
         <div className="container">
-          <form className="form-profile">
+          <form className="form-profile" onSubmit={handleRegister}>
             <label>Clientes</label>
-            <select name="" id="">
-              <option value="1">Mercado Teste</option>
-              <option value="1">Loja</option>
-            </select>
+            {loadCustomer ? (
+              <input type="text" disabled={true} value="carregando..." />
+            ) : (
+              <select value={customerSelected} onChange={handleChangeCustomer}>
+                {customers.map((item, index) => {
+                  return (
+                    <option value={index} key={index}>
+                      {item.nomeFantasia}
+                    </option>
+                  );
+                })}
+              </select>
+            )}
 
             <label>Assunto</label>
             <select value={assunto} onChange={handleChangeSelect}>
